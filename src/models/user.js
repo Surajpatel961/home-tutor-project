@@ -1,7 +1,7 @@
 import mongoose, { mongo, Schema } from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    Name:{
+    name:{
         type:String,
         required:true,
         trim:true
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["Admin" , "Student" , "faculty"],
+        enum:["admin" , "student" , "faculty"],
         required:true,
     },
     semester:{

@@ -1,11 +1,53 @@
 import express from "express";
+import User from "../models/user.js";
+import bcrypt from "bcrypt"
 
 export const register = async (req , res) =>{
 
-    console.log(req.body)
+  try{
+        
+    const { name, email, password, role, semester, department} = req.body
 
-     await res.json({
-        message:'data recieved successfully',
-        data:req.body
+    if(!name ,!email , !password , !role){
+            return res.status(400).json({
+                success:false,
+                message:"all fields are required"
+        })
+    }
+
+    const userEmail = await User.findOne({email})
+
+    if(userEmail){
+        return res.status(409).json({
+            success:false,
+            message:"email already exist"
+        })
+    }
+
+    const hashPassword = await bcrypt.hash(password , 10);
+
+    const user = new User({
+        name,
+        email,
+        password:hashPassword,
+        role,
+        semester,
+        department
     })
+
+    await user.save()
+
+    res.status(201).json({
+        success:true,
+        message: "User registered successfully",
+        user
+    })
+  }catch(error){
+    
+    res.status(500).json({
+        success:false,
+        message:error.message
+    })
+  }
+     
 }
