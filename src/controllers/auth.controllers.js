@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../models/user.js";
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken";
 
 export const register = async (req , res) =>{
 
@@ -50,4 +51,57 @@ export const register = async (req , res) =>{
     })
   }
      
+}
+
+export const login = async (req , res) =>{
+  
+    try{
+        const {email , password} = req.body
+
+        const user = await User.findOne({email})
+
+        if(!user) return res.status(409).json({
+            success:false,
+            message:"user not exist"
+        })
+
+        const isPasswordCorrect = await bcrypt.compare(password , user.password)
+
+        if(!isPasswordCorrect){
+
+            return res.status(401).json({
+                success:false,
+                message:"invaild email and password"
+            })
+
+        }
+
+        const token = jwt.sign({
+            
+                id:user._id,
+                role:user.role,
+
+        }, process.env.JWT_SECRET,
+        {
+            expiresIn:process.env.JWT_EXPIRES_IN
+        })
+
+        console.log("Generated Token:", token);
+        console.log("Verified Immediately:", jwt.verify(token, process.env.JWT_SECRET));
+
+        return res.status(200).json({
+           success: true,
+           message: "Login successful",
+           token
+        });
+
+    }catch(error){
+        res.status(500).json({
+            success:false,
+           message : error.message
+        })
+       
+
+    }
+    
 }
