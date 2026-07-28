@@ -2,6 +2,7 @@ import express, { urlencoded } from "express";
 import cors from "cors"
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js"; 
+import noteRouter from "./routes/note.routes.js"
 import morgan from "morgan";
 import authMiddleware from "./middleware/auth.middleware.js";
 
@@ -15,5 +16,7 @@ app.use(express.json())
 app.use(morgan("dev"))
 
 app.use("/api/auth" , authRouter)
+
+app.use("/note" , noteRouter)
 
 export default app;
