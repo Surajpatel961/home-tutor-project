@@ -22,6 +22,10 @@ const notesSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    pdfPublicId: {
+        type: String,
+        required: true
+    },
     uploadedBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",

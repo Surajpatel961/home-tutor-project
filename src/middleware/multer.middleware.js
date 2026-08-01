@@ -5,7 +5,7 @@ const storage = multer.memoryStorage();
 
 const fileFilter = (req , file , cb) => {
 
-    if(file.mimetype === application/pdf){
+    if(file.mimetype === "application/pdf"){
 
         cb(null , true);
 

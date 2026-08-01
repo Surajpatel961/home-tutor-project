@@ -1,12 +1,13 @@
 import Note from "../models/note.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const createNote = async (req , res) =>{
 
     try {
 
-        const {title, description, subject, semester, pdfUrl} = req.body
+        const {title, description, subject, semester} = req.body
 
-        if (!title || !description || !subject || !semester || !pdfUrl) {
+        if (!title || !description || !subject || !semester) {
 
             return res.status(400).json({
                 success:false,
@@ -14,6 +15,17 @@ export const createNote = async (req , res) =>{
             });
 
         }
+        
+        if(!req.file){
+            return res.status(400).json({
+                success:false,
+                message:" Pdf file is required"
+            })
+        }
+
+        const uploadResult = await uploadToCloudinary(req.file.buffer)
+
+        console.log(uploadResult);
 
         const newNote = new Note({
            
@@ -21,7 +33,8 @@ export const createNote = async (req , res) =>{
             description,
             subject,
             semester,
-            pdfUrl,
+            pdfUrl:uploadResult.secure_url,
+            pdfPublicId:uploadResult.public_id,
             uploadedBy:req.user.id
 
         })
