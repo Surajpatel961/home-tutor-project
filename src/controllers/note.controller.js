@@ -60,22 +60,71 @@ export const createNote = async (req , res) =>{
 export const getAllNotes = async (req , res) => {
 
     try {
+
+        const {semester , subject , search} = req.query
         
-        const allNotes = await Note.find().populate({
+        const filter = {}
+
+        if(semester) {
+            filter.semester = semester;
+        }
+        
+        if (subject) {
+            filter.subject = {
+                $regex: subject,
+                $options: "i"
+};
+        }
+
+        if(search) {
+            filter.$or = [
+                       {
+                           title: {
+                               $regex: search,
+                               $options: "i"
+                           }
+                       },
+                       {
+                           subject: {
+                               $regex: search,
+                               $options: "i"
+                           }
+                       }
+            ]
+                       
+        }
+
+
+        const page = parseInt(req.query.page)||1;
+        const limit = parseInt(req.query.limit)|| 10;
+
+        const skip = (page - 1)  * limit;
+        
+        const allNotes = await Note.find(filter).populate({
            
             path:"uploadedBy",
             select:"name email department role"
         })
+        .skip(skip)
+        .limit(limit);
 
-        res.status(200).json({
+        const totalNotes = await Note.countDocuments(filter);
+        const totalPages = Math.ceil(totalNotes / limit)
+
+        return res.status(200).json({
             success: true,
             message:"Notes fatched Successfully",
+            currentPage: page,
+            totalPages,
+            totalNotes,
+            "hasNextPage": page < totalPages,
+            "hasPreviousPage": page > 1,
             data:allNotes
         })
 
     } catch (error) {
 
-        res.sataus(400).json({
+        res.status(500).json({
             success:false,
             message:error.message
         })
