@@ -1,4 +1,5 @@
 import Note from "../models/note.js";
+import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const createNote = async (req , res) =>{
@@ -184,21 +185,28 @@ export const  deleteNote = async ( req , res) => {
             })
         }
 
-         await note.deleteOne();
+        const cloudinaryResult = await deleteFromCloudinary(note.pdfPublicId);
 
-         return res.status(200).json({
+        await note.deleteOne();
+
+        return res.status(200).json({
               success: true,
               message: "Note deleted successfully"
-         });
+        });
 
     } catch (error) {
         
-        if(error === CasteError) {
+        if(error === CastError) {
 
             return res.status(400).json({
                 success:false,
                 message:" Invalid note id"
             })
+
+            return res.status(500).json({
+                success: false,
+                message: error.message
+});
         }
     }
 }
