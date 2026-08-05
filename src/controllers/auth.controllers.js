@@ -38,10 +38,13 @@ export const register = async (req , res) =>{
 
     await user.save()
 
-    res.status(201).json({
+    const userObject = user.toObject();
+    delete userObject.password
+
+    return res.status(201).json({
         success:true,
         message: "User registered successfully",
-        user
+        data:userObject
     })
   }catch(error){
     
@@ -62,7 +65,7 @@ export const login = async (req , res) =>{
 
         if(!user) return res.status(409).json({
             success:false,
-            message:"user not exist"
+            message:"Invaild email or password"
         })
 
         const isPasswordCorrect = await bcrypt.compare(password , user.password)
@@ -71,7 +74,7 @@ export const login = async (req , res) =>{
 
             return res.status(401).json({
                 success:false,
-                message:"invaild email and password"
+                message:"Invaild email or password"
             })
 
         }
