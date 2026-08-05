@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Note from "../models/note.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
@@ -61,7 +62,7 @@ export const getAllNotes = async (req , res) => {
 
     try {
 
-        const {semester , subject , search} = req.query
+        const {semester , subject , search ,sort} = req.query
         
         const filter = {}
 
@@ -94,6 +95,18 @@ export const getAllNotes = async (req , res) => {
                        
         }
 
+        let sortOption = {};
+
+        if (sort === "newest") {
+            sortOption.createdAt = -1;
+        } else if (sort === "oldest") {
+            sortOption.createdAt = 1;
+        } else if (sort === "downloads") {
+            sortOption.downloads = -1;
+        } else {
+            sortOption.createdAt = -1; 
+        }
+
 
         const page = parseInt(req.query.page)||1;
         const limit = parseInt(req.query.limit)|| 10;
@@ -105,6 +118,7 @@ export const getAllNotes = async (req , res) => {
             path:"uploadedBy",
             select:"name email department role"
         })
+        .sort(sortOption)
         .skip(skip)
         .limit(limit);
 
@@ -257,5 +271,54 @@ export const  deleteNote = async ( req , res) => {
                 message: error.message
 });
         }
+    }
+}
+
+export const downloadNotes = async (req ,res) => {
+    
+    try {
+        const noteId = req.params.id;
+
+    if(!mongoose.Types.ObjectId.isValid(noteId)) {
+
+        return res.status(400).json({
+            success:false,
+            message:" Invalid Id"
+        })
+    }
+
+    const note = await Note.findById(noteId);
+
+    if(!note) {
+
+        return res.status(404).json({
+            success:false,
+            message:" note not found"
+        })
+    }
+
+    const updatedNote = await Note.findByIdAndUpdate(
+        noteId,
+        {
+            $inc: {
+                downloads:1
+            }
+        },
+        {
+            new : true
+        }
+    )
+
+    return res.status(200).json({
+        success:true,
+        message:"Download count updated successfully",
+        data:updateNote
+    })
+    } catch (error) {
+        
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
     }
 }
