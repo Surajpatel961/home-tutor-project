@@ -15,6 +15,13 @@ app.use(cookieParser())
 app.use(express.json())
 app.use(morgan("dev"))
 
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "EduShare Backend is Live 🚀"
+    });
+});
+
 app.use("/api/auth" , authRouter)
 
 app.use("/note" , noteRouter)
